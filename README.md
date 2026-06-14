@@ -1,33 +1,44 @@
 # Credit Card Validator
 
+![Cover](docs/screenshots/cover.png)
+
 A Java command-line application that performs basic offline validation of payment card numbers.
 
 It validates input format, card-network prefixes, supported lengths, and the Luhn checksum. Valid numbers are displayed in masked form so the full number is not returned in the result.
 
+## Features
+
+- **Input normalization** — Accepts digits, spaces, and hyphens
+- **Card network detection** — Supports Visa, Mastercard, American Express, Discover, JCB, UnionPay, RuPay, Maestro, Diners Club, and Mir
+- **Luhn checksum validation** — Verifies card numbers using the industry-standard Luhn algorithm
+- **Secure card masking** — Returns only masked numbers with last four digits visible
+- **GitHub Actions CI** — Automated build and test pipeline
+
 ## Project Structure
+
+![Architecture](docs/screenshots/architecture.png)
 
 ```text
 credit-card-validator/
-├── .github/workflows/ci.yml
-├──  screenshots/
+├── .github/workflows/ci.yml    # CI/CD pipeline
+├── docs/screenshots/            # Project documentation assets
 ├── src/
 │   └── CreditCardValidator.java
 ├── tests/
 │   └── CreditCardValidatorTest.java
-├── build/
+├── build/                       # Generated locally (ignored by Git)
 ├── .gitignore
 ├── LICENSE
 └── README.md
 ```
 
-## Features
+## How It Works
 
-- Accepts digits, spaces, and hyphens
-- Rejects empty or malformed input
-- Supports card numbers from 12 to 19 digits
-- Applies the Luhn checksum
-- Detects common networks such as Visa, Mastercard, American Express, Discover, JCB, UnionPay, RuPay, Maestro, Diners Club, and Mir
-- Returns only the masked number and last four digits
+1. **Input Normalization** — Removes spaces and hyphens, validates that only digits remain
+2. **Length Check** — Ensures the card number is between 12 and 19 digits
+3. **Prefix Matching** — Identifies the card network based on BIN (Bank Identification Number) ranges
+4. **Luhn Algorithm** — Validates the checksum to detect typos and invalid numbers
+5. **Masking** — Replaces all but the last four digits with asterisks for secure display
 
 ## Requirements
 
@@ -53,6 +64,33 @@ Type a card number and press Enter. Type `exit` to quit.
 ```bash
 javac -Xlint:all -cp build/java -d build/java tests/CreditCardValidatorTest.java
 java -cp build/java CreditCardValidatorTest
+```
+
+## Example Output
+
+```text
+╔════════════════════════════════════╗
+║       Credit Card Validator        ║
+╚════════════════════════════════════╝
+Enter digits, spaces, or hyphens. Type 'exit' to quit.
+
+Enter card number:
+> 4111 1111 1111 1111
+
+✓ Validation Status : VALID
+✓ Card Network      : VISA
+✓ Card Length       : 16
+✓ Luhn Check        : PASSED
+✓ Masked Number     : ************1111
+
+Enter card number:
+> 4111111111111121
+
+✗ Validation Status : INVALID
+• Card Network      : VISA
+• Card Length       : 16
+✗ Luhn Check        : FAILED
+✗ Reason            : The number fails the Luhn checksum.
 ```
 
 ## Public Test Numbers
