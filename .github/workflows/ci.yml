@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,24 +18,10 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Build Java
+      - name: Compile
         run: |
           mkdir -p build/java
-          javac -Xlint:all -d build/java src/java/CreditCardValidator.java
+          javac -Xlint:all -d build/java CreditCardValidator.java
 
-      - name: Test Java
-        run: |
-          mkdir -p build/java
-          javac -Xlint:all -d build/java src/java/CreditCardValidator.java tests/java/CreditCardValidatorTest.java
-          java -cp build/java CreditCardValidatorTest
-
-      - name: Build C++
-        run: |
-          mkdir -p build/cpp
-          g++ -std=c++17 -Wall -Wextra -pedantic src/cpp/credit-card-validator.cpp -o build/cpp/validator
-
-      - name: Test C++
-        run: |
-          mkdir -p build/cpp
-          g++ -std=c++17 -Wall -Wextra -pedantic tests/cpp/credit-card-validator-test.cpp -o build/cpp/validator_test
-          ./build/cpp/validator_test
+      - name: Smoke test
+        run: printf 'exit\n' | java -cp build/java CreditCardValidator

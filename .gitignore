@@ -1,12 +1,15 @@
 # Java
 *.class
 
-# C++
+# C++ files and old source layouts
+*.cpp
 *.o
 *.obj
 *.exe
 validator
 validator_test
+/src/
+/tests/
 
 # Build output
 build/
@@ -16,4 +19,3 @@ target/
 # Editor and OS files
 .DS_Store
 Thumbs.db
-

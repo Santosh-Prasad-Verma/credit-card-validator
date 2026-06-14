@@ -1,8 +1,8 @@
 # Credit Card Validator
 
-A Java and C++ command-line credit card number validator.
+A Java command-line application that performs basic offline validation of payment card numbers.
 
-This project performs offline validation only. It checks whether a card number has a valid format, known card-network prefix, supported length, and Luhn checksum. It cannot prove that a card exists, is active, belongs to a real customer, or has available funds.
+It validates input format, card-network prefixes, supported lengths, and the Luhn checksum. Valid numbers are displayed in masked form so the full number is not returned in the result.
 
 ## Project Structure
 
@@ -10,16 +10,8 @@ This project performs offline validation only. It checks whether a card number h
 credit-card-validator/
 ├── .github/workflows/ci.yml
 ├── .vscode/settings.json
-├── src/
-│   ├── cpp/
-│   │   └── credit-card-validator.cpp
-│   └── java/
-│       └── CreditCardValidator.java
-├── tests/
-│   ├── cpp/
-│   │   └── credit-card-validator-test.cpp
-│   └── java/
-│       └── CreditCardValidatorTest.java
+├── build/                     # Generated locally and ignored by Git
+├── CreditCardValidator.java
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -28,87 +20,42 @@ credit-card-validator/
 ## Features
 
 - Accepts digits, spaces, and hyphens
-- Rejects empty input and unsupported characters
-- Normalizes input before validation
-- Checks card number length from 12 to 19 digits
-- Detects common card networks:
-  - American Express
-  - Visa
-  - Mastercard
-  - Discover
-  - Diners Club
-  - JCB
-  - UnionPay
-  - RuPay
-  - Maestro
-  - Mir
-- Uses the Luhn checksum
-- Masks valid card numbers in output
-- Returns only masked number and last four digits from validation results
+- Rejects empty or malformed input
+- Supports card numbers from 12 to 19 digits
+- Applies the Luhn checksum
+- Detects common networks such as Visa, Mastercard, American Express, Discover, JCB, UnionPay, RuPay, Maestro, Diners Club, and Mir
+- Returns only the masked number and last four digits
 
 ## Requirements
 
 - Java JDK 8 or newer
-- A C++17 compiler such as `g++`
+
+## Build
+
+```bash
+mkdir -p build/java
+javac -Xlint:all -d build/java CreditCardValidator.java
+```
 
 ## Run
 
-### Java
-
 ```bash
-mkdir -p build/java
-javac -d build/java src/java/CreditCardValidator.java
 java -cp build/java CreditCardValidator
 ```
 
-### C++
-
-```bash
-mkdir -p build/cpp
-g++ -std=c++17 -Wall -Wextra -pedantic src/cpp/credit-card-validator.cpp -o build/cpp/validator
-./build/cpp/validator
-```
-
-## Test
-
-### Java
-
-```bash
-mkdir -p build/java
-javac -Xlint:all -d build/java src/java/CreditCardValidator.java tests/java/CreditCardValidatorTest.java
-java -cp build/java CreditCardValidatorTest
-```
-
-### C++
-
-```bash
-mkdir -p build/cpp
-g++ -std=c++17 -Wall -Wextra -pedantic tests/cpp/credit-card-validator-test.cpp -o build/cpp/validator_test
-./build/cpp/validator_test
-```
-
-## Usage
-
 Type a card number and press Enter. Type `exit` to quit.
 
-Input examples:
+Example:
 
 ```text
-4111 1111 1111 1111
-5500-0000-0000-0004
-378282246310005
-```
-
-Example output:
-
-```text
+Enter card number: 4111 1111 1111 1111
 Result: Valid Visa card number.
 Masked: ************1111
 ```
 
-## Test Numbers
+## Public Test Numbers
 
-These are public test numbers, not real payment cards:
+Use only public test numbers:
 
 | Network | Number |
 | --- | --- |
@@ -117,15 +64,13 @@ These are public test numbers, not real payment cards:
 | American Express | `378282246310005` |
 | Discover | `6011000990139424` |
 | JCB | `3530111333300000` |
-| Diners Club | `30569309025904` |
-| UnionPay | `62123456789000003` |
 
-## GitHub CI
+## Important Limitation
 
-The workflow in `.github/workflows/ci.yml` builds and tests both implementations on every push and pull request.
+This application does not confirm that a card exists, is active, has available funds, or belongs to a particular customer. It is an offline validation utility, not a payment processor.
 
-## Validation Limits
+For production payments, collect and tokenize card details through a PCI-compliant provider such as Stripe, Adyen, Braintree, Razorpay, or another approved gateway. Never log or store complete card numbers.
 
-Real card validation requires a payment processor, card issuer, or up-to-date BIN/IIN database. Network prefix ranges can change over time, so this project is best used for learning, form validation, and basic offline checks.
+## License
 
-For production payment flows, use this only as a local pre-check before tokenizing or authorizing the card through a PCI-compliant payment provider. Do not log, persist, or expose full card numbers.
+Licensed under the [MIT License](LICENSE).
