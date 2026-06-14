@@ -1,0 +1,12 @@
+{
+    "code-runner.runInTerminal": true,
+    "java.project.sourcePaths": [
+        "src/java",
+        "tests/java"
+    ],
+    "java.project.outputPath": "build/java",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "code-runner.executorMap": {
+        "java": "cd $workspaceRoot && mkdir -p build/java && javac -d build/java src/java/CreditCardValidator.java tests/java/CreditCardValidatorTest.java && java -cp build/java $fileNameWithoutExt"
+    }
+}

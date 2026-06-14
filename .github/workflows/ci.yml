@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Build Java
+        run: |
+          mkdir -p build/java
+          javac -Xlint:all -d build/java src/java/CreditCardValidator.java
+
+      - name: Test Java
+        run: |
+          mkdir -p build/java
+          javac -Xlint:all -d build/java src/java/CreditCardValidator.java tests/java/CreditCardValidatorTest.java
+          java -cp build/java CreditCardValidatorTest
+
+      - name: Build C++
+        run: |
+          mkdir -p build/cpp
+          g++ -std=c++17 -Wall -Wextra -pedantic src/cpp/credit-card-validator.cpp -o build/cpp/validator
+
+      - name: Test C++
+        run: |
+          mkdir -p build/cpp
+          g++ -std=c++17 -Wall -Wextra -pedantic tests/cpp/credit-card-validator-test.cpp -o build/cpp/validator_test
+          ./build/cpp/validator_test

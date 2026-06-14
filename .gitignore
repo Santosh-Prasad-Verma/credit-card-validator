@@ -1,0 +1,19 @@
+# Java
+*.class
+
+# C++
+*.o
+*.obj
+*.exe
+validator
+validator_test
+
+# Build output
+build/
+out/
+target/
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+
