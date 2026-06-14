@@ -1,20 +1,24 @@
 # Java
 *.class
 
-# C++ files and old source layouts
+# C++
 *.cpp
 *.o
 *.obj
 *.exe
 validator
 validator_test
-/src/
 /tests/
+
 
 # Build output
 build/
 out/
 target/
+
+# Generated test output
+test-results/
+coverage/
 
 # Editor and OS files
 .DS_Store

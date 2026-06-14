@@ -9,9 +9,12 @@ It validates input format, card-network prefixes, supported lengths, and the Luh
 ```text
 credit-card-validator/
 ├── .github/workflows/ci.yml
-├── .vscode/settings.json
-├── build/                     # Generated locally and ignored by Git
-├── CreditCardValidator.java
+├──  screenshots/
+├── src/
+│   └── CreditCardValidator.java
+├── tests/
+│   └── CreditCardValidatorTest.java
+├── build/
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -34,7 +37,7 @@ credit-card-validator/
 
 ```bash
 mkdir -p build/java
-javac -Xlint:all -d build/java CreditCardValidator.java
+javac -Xlint:all -d build/java src/CreditCardValidator.java
 ```
 
 ## Run
@@ -45,12 +48,11 @@ java -cp build/java CreditCardValidator
 
 Type a card number and press Enter. Type `exit` to quit.
 
-Example:
+## Test
 
-```text
-Enter card number: 4111 1111 1111 1111
-Result: Valid Visa card number.
-Masked: ************1111
+```bash
+javac -Xlint:all -cp build/java -d build/java tests/CreditCardValidatorTest.java
+java -cp build/java CreditCardValidatorTest
 ```
 
 ## Public Test Numbers

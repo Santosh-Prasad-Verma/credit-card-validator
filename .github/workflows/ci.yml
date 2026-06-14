@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,12 +16,17 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "17"
 
-      - name: Compile
+      - name: Compile application and tests
         run: |
           mkdir -p build/java
-          javac -Xlint:all -d build/java CreditCardValidator.java
+          javac -encoding UTF-8 -Xlint:all -d build/java \
+            src/CreditCardValidator.java \
+            tests/CreditCardValidatorTest.java
 
-      - name: Smoke test
+      - name: Run tests
+        run: java -cp build/java CreditCardValidatorTest
+
+      - name: Run CLI smoke test
         run: printf 'exit\n' | java -cp build/java CreditCardValidator

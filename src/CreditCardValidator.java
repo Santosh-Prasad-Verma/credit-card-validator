@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class CreditCardValidator {
@@ -25,12 +26,11 @@ public class CreditCardValidator {
 
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println("Credit Card Validator");
-            System.out.println("Accepts digits, spaces, or hyphens. Type 'exit' to quit.");
-            System.out.println("Offline validation checks format, network, and Luhn checksum only.");
+            printBanner();
+            System.out.println("Enter digits, spaces, or hyphens. Type 'exit' to quit.");
 
             while (true) {
-                System.out.print("\nEnter card number: ");
+                System.out.print("\nEnter card number:\n> ");
                 String input = scanner.nextLine();
 
                 if (input.trim().equalsIgnoreCase("exit")) {
@@ -38,18 +38,51 @@ public class CreditCardValidator {
                 }
 
                 ValidationResult result = validateCardNumber(input);
-
-                if (result.isValid()) {
-                    System.out.println("Result: Valid " + result.getSchemeName() + " card number.");
-                    System.out.println("Masked: " + result.getMaskedNumber());
-                } else {
-                    System.out.println("Result: Invalid card number.");
-                    System.out.println("Reason: " + result.getMessage());
-                }
+                printResult(result);
             }
         }
 
         System.out.println("\nGoodbye!");
+    }
+
+    private static void printBanner() {
+        System.out.println("╔════════════════════════════════════╗");
+        System.out.println("║       Credit Card Validator        ║");
+        System.out.println("╚════════════════════════════════════╝");
+    }
+
+    private static void printResult(ValidationResult result) {
+        String statusMark = result.isValid() ? "✓" : "✗";
+        String detailMark = result.isValid() ? "✓" : "•";
+        String network = result.getSchemeName().isEmpty()
+            ? "UNKNOWN"
+            : result.getSchemeName().toUpperCase(Locale.ROOT);
+        String luhnStatus;
+
+        if (!result.isLuhnChecked()) {
+            luhnStatus = "NOT RUN";
+        } else {
+            luhnStatus = result.isLuhnPassed() ? "PASSED" : "FAILED";
+        }
+
+        System.out.println();
+        printField(statusMark, "Validation Status", result.isValid() ? "VALID" : "INVALID");
+        printField(detailMark, "Card Network", network);
+        printField(detailMark, "Card Length", Integer.toString(result.getCardLength()));
+        String luhnMark = !result.isLuhnChecked() ? "•" : result.isLuhnPassed() ? "✓" : "✗";
+        printField(luhnMark, "Luhn Check", luhnStatus);
+
+        if (!result.getMaskedNumber().isEmpty()) {
+            printField(detailMark, "Masked Number", result.getMaskedNumber());
+        }
+
+        if (!result.isValid()) {
+            printField("✗", "Reason", result.getMessage());
+        }
+    }
+
+    private static void printField(String marker, String label, String value) {
+        System.out.printf("%s %-18s : %s%n", marker, label, value);
     }
 
     public static ValidationResult validateCardNumber(String input) {
@@ -63,23 +96,27 @@ public class CreditCardValidator {
         int length = number.length();
 
         if (length < MIN_PAN_LENGTH || length > MAX_PAN_LENGTH) {
-            return ValidationResult.invalid("Card numbers must contain " + MIN_PAN_LENGTH + " to "
-                + MAX_PAN_LENGTH + " digits after removing spaces and hyphens.");
+            return ValidationResult.invalid(number, "", false, false,
+                "Card numbers must contain " + MIN_PAN_LENGTH + " to "
+                    + MAX_PAN_LENGTH + " digits after removing spaces and hyphens.");
         }
 
         List<CardScheme> prefixMatches = findPrefixMatches(number);
         if (prefixMatches.isEmpty()) {
-            return ValidationResult.invalid("Unsupported or unknown card network prefix.");
+            return ValidationResult.invalid(number, "", false, false,
+                "Unsupported or unknown card network prefix.");
         }
 
         List<CardScheme> lengthMatches = filterByLength(prefixMatches, length);
         if (lengthMatches.isEmpty()) {
-            return ValidationResult.invalid("The prefix looks like " + joinSchemeNames(prefixMatches)
-                + ", but that network does not use " + length + "-digit card numbers.");
+            return ValidationResult.invalid(number, joinSchemeNames(prefixMatches), false, false,
+                "The prefix looks like " + joinSchemeNames(prefixMatches)
+                    + ", but that network does not use " + length + "-digit card numbers.");
         }
 
         if (!passesLuhnCheck(number)) {
-            return ValidationResult.invalid("The number fails the Luhn checksum.");
+            return ValidationResult.invalid(number, joinSchemeNames(lengthMatches), true, false,
+                "The number fails the Luhn checksum.");
         }
 
         return ValidationResult.valid(number, joinSchemeNames(lengthMatches));
@@ -164,15 +201,19 @@ public class CreditCardValidator {
 
     private static String maskCardNumber(String number) {
         int visibleDigits = Math.min(4, number.length());
-        String lastDigits = number.substring(number.length() - visibleDigits);
         StringBuilder masked = new StringBuilder();
 
         for (int i = 0; i < number.length() - visibleDigits; i++) {
             masked.append('*');
         }
 
-        masked.append(lastDigits);
+        masked.append(getLastFour(number));
         return masked.toString();
+    }
+
+    private static String getLastFour(String number) {
+        int visibleDigits = Math.min(4, number.length());
+        return number.substring(number.length() - visibleDigits);
     }
 
     private static String joinSchemeNames(List<CardScheme> schemes) {
@@ -205,24 +246,67 @@ public class CreditCardValidator {
         private final String maskedNumber;
         private final String lastFour;
         private final String schemeName;
+        private final int cardLength;
+        private final boolean luhnChecked;
+        private final boolean luhnPassed;
         private final String message;
 
-        private ValidationResult(boolean valid, String maskedNumber, String lastFour, String schemeName, String message) {
+        private ValidationResult(
+            boolean valid,
+            String maskedNumber,
+            String lastFour,
+            String schemeName,
+            int cardLength,
+            boolean luhnChecked,
+            boolean luhnPassed,
+            String message
+        ) {
             this.valid = valid;
             this.maskedNumber = maskedNumber;
             this.lastFour = lastFour;
             this.schemeName = schemeName;
+            this.cardLength = cardLength;
+            this.luhnChecked = luhnChecked;
+            this.luhnPassed = luhnPassed;
             this.message = message;
         }
 
         static ValidationResult valid(String normalizedNumber, String schemeName) {
             int visibleDigits = Math.min(4, normalizedNumber.length());
             String lastFour = normalizedNumber.substring(normalizedNumber.length() - visibleDigits);
-            return new ValidationResult(true, maskCardNumber(normalizedNumber), lastFour, schemeName, "Valid card number.");
+            return new ValidationResult(
+                true,
+                maskCardNumber(normalizedNumber),
+                lastFour,
+                schemeName,
+                normalizedNumber.length(),
+                true,
+                true,
+                "Valid card number."
+            );
         }
 
         static ValidationResult invalid(String message) {
-            return new ValidationResult(false, "", "", "", message);
+            return new ValidationResult(false, "", "", "", 0, false, false, message);
+        }
+
+        static ValidationResult invalid(
+            String normalizedNumber,
+            String schemeName,
+            boolean luhnChecked,
+            boolean luhnPassed,
+            String message
+        ) {
+            return new ValidationResult(
+                false,
+                maskCardNumber(normalizedNumber),
+                CreditCardValidator.getLastFour(normalizedNumber),
+                schemeName,
+                normalizedNumber.length(),
+                luhnChecked,
+                luhnPassed,
+                message
+            );
         }
 
         public boolean isValid() {
@@ -239,6 +323,18 @@ public class CreditCardValidator {
 
         public String getSchemeName() {
             return schemeName;
+        }
+
+        public int getCardLength() {
+            return cardLength;
+        }
+
+        public boolean isLuhnChecked() {
+            return luhnChecked;
+        }
+
+        public boolean isLuhnPassed() {
+            return luhnPassed;
         }
 
         public String getMessage() {
