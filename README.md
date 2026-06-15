@@ -1,6 +1,6 @@
 # Credit Card Validator
 
-![Cover](docs/screenshots/cover.png)
+<table><tr><td><img src="images/result.png" alt="Result" width="400"/></td><td><img src="images/result-2.png" alt="Result 2" width="400"/></td></tr></table>
 
 A Java command-line application that performs basic offline validation of payment card numbers.
 
@@ -16,7 +16,7 @@ It validates input format, card-network prefixes, supported lengths, and the Luh
 
 ## Project Structure
 
-![Architecture](docs/screenshots/architecture.png)
+![Architecture](images/architecture.png)
 
 ```text
 credit-card-validator/
@@ -77,7 +77,7 @@ Enter digits, spaces, or hyphens. Type 'exit' to quit.
 Enter card number:
 > 4111 1111 1111 1111
 
-✓ Validation Status : VALID
+✓ Overall Status : VALID
 ✓ Card Network      : VISA
 ✓ Card Length       : 16
 ✓ Luhn Check        : PASSED
@@ -90,7 +90,7 @@ Enter card number:
 • Card Network      : VISA
 • Card Length       : 16
 ✗ Luhn Check        : FAILED
-✗ Reason            : The number fails the Luhn checksum.
+✗ Reason            : Invalid card length and failed checksum.
 ```
 
 ## Public Test Numbers
